@@ -9,9 +9,9 @@
 --   * Cac FK "kep" (xxx_id, workspace_id) bao dam du lieu khong bi tron giua cac workspace
 -- =====================================================================
 
-CREATE DATABASE IF NOT EXISTS social_media_mgmt
+CREATE DATABASE IF NOT EXISTS social_media_mgmt_aligned
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE social_media_mgmt;
+USE social_media_mgmt_aligned;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -653,6 +653,73 @@ CREATE TABLE workspace_settings (
     ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
+
+-- ALIGNED 2026-11-03. Fresh-install schema in a separate database; not a migration.
+ALTER TABLE users
+  ADD failed_login_attempts INT UNSIGNED NOT NULL DEFAULT 0,
+  ADD locked_until DATETIME NULL,
+  ADD is_system_admin TINYINT(1) NOT NULL DEFAULT 0;
+
+CREATE TABLE auth_sessions (
+  session_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  token_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_seen_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expires_at DATETIME NOT NULL,
+  revoked_at DATETIME NULL,
+  UNIQUE KEY uq_session_token (token_hash),
+  KEY idx_session_user_expiry (user_id, expires_at),
+  CONSTRAINT fk_session_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE auth_action_tokens (
+  action_token_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  purpose ENUM('verify_email','password_reset') NOT NULL,
+  token_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  expires_at DATETIME NOT NULL,
+  consumed_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_action_token (token_hash),
+  KEY idx_action_user_purpose (user_id, purpose, expires_at),
+  CONSTRAINT fk_action_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- NULL values may repeat; only active/pending/successful rows consume the unique slot.
+ALTER TABLE schedules
+  ADD active_variant_id BIGINT UNSIGNED GENERATED ALWAYS AS
+    (CASE WHEN status IN ('pending','queued') THEN variant_id ELSE NULL END) STORED,
+  ADD UNIQUE KEY uq_sched_active_variant (active_variant_id),
+  ADD UNIQUE KEY uq_schedule_id_variant (schedule_id, variant_id);
+
+ALTER TABLE approval_requests
+  ADD pending_post_id BIGINT UNSIGNED GENERATED ALWAYS AS
+    (CASE WHEN status = 'pending' THEN post_id ELSE NULL END) STORED,
+  ADD UNIQUE KEY uq_approval_pending_post (pending_post_id);
+
+ALTER TABLE publish_jobs
+  ADD successful_variant_id BIGINT UNSIGNED GENERATED ALWAYS AS
+    (CASE WHEN status = 'success' THEN variant_id ELSE NULL END) STORED,
+  ADD UNIQUE KEY uq_job_success_variant (successful_variant_id),
+  ADD claim_token CHAR(36) NULL,
+  ADD lease_expires_at DATETIME NULL,
+  ADD KEY idx_job_lease (status, lease_expires_at),
+  DROP FOREIGN KEY fk_job_schedule,
+  ADD CONSTRAINT fk_job_schedule_variant FOREIGN KEY (schedule_id, variant_id)
+    REFERENCES schedules(schedule_id, variant_id) ON DELETE RESTRICT ON UPDATE RESTRICT;
+-- Retain schedules with jobs for history; cancel them instead of deleting them.
+-- Unique success protects local records only. Remote idempotency/reconciliation is mandatory.
+
+ALTER TABLE notifications
+  ADD email_attempt_count INT UNSIGNED NOT NULL DEFAULT 0,
+  ADD email_next_retry_at DATETIME NULL,
+  ADD email_last_error VARCHAR(1000) NULL,
+  ADD in_app_visible TINYINT(1) NOT NULL DEFAULT 1,
+  ADD email_claim_token CHAR(36) NULL,
+  ADD email_lease_expires_at DATETIME NULL;
+-- Email-only notifications use in_app_visible=0 and must be excluded from unread counts.
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- =====================================================================
@@ -694,3 +761,14 @@ WHERE r.code = 'admin'
    OR (r.code = 'editor'   AND p.code IN ('post.create','post.edit','media.manage','report.view','inbox.reply'))
    OR (r.code = 'approver' AND p.code IN ('post.approve','post.publish','report.view'))
    OR (r.code = 'viewer'   AND p.code IN ('report.view'));
+INSERT INTO system_settings (setting_key, setting_value, description) VALUES
+ ('auth.lock_minutes', '15', 'Temporary login lock after five failed attempts'),
+ ('auth.idle_minutes', '30', 'Session idle timeout'),
+ ('auth.session_max_days', '7', 'Absolute session lifetime'),
+ ('auth.verify_email_hours', '24', 'Email verification token lifetime'),
+ ('auth.password_reset_minutes', '30', 'Password reset token lifetime'),
+ ('publish.max_retries', '3', 'Three retries after initial attempt'),
+ ('publish.retry_delays_seconds', '[60,120,240]', 'Retry delay defaults');
+-- On workspace creation, in the same transaction as owner membership:
+-- INSERT workspace_settings require_approval=false, allow_self_approval=false.
+-- Configure the database connection/session time_zone='+00:00' in application setup.
