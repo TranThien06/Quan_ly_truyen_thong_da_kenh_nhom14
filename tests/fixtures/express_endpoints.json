@@ -1,0 +1,452 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/register",
+    "status": 201
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/verify-email",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/resend-verification",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/forgot-password",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/reset-password",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/logout",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/me",
+    "status": 200
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/me",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/me/change-password",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/me/deletion-requests",
+    "status": 202
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/roles",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces",
+    "status": 201
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/invitations/accept",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}",
+    "status": 200
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/workspaces/{workspaceId}",
+    "status": 200
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workspaces/{workspaceId}",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/transfer-owner",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/members",
+    "status": 200
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/workspaces/{workspaceId}/members/{memberId}",
+    "status": 200
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workspaces/{workspaceId}/members/{memberId}",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/invitations",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/invitations",
+    "status": 201
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/invitations/{invitationId}/revoke",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/settings",
+    "status": 200
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/workspaces/{workspaceId}/settings",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oauth/{platform}/callback",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/platforms",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/platforms/{platform}/capabilities",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/social-accounts",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/social-accounts/oauth/complete-selection",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/social-accounts/oauth/{platform}",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/social-accounts/{accountId}/disconnect",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/social-accounts/{accountId}/sync/{kind}",
+    "status": 202
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/posts",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/posts",
+    "status": 201
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/posts/{postId}",
+    "status": 200
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/workspaces/{workspaceId}/posts/{postId}",
+    "status": 200
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workspaces/{workspaceId}/posts/{postId}",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/posts/{postId}/duplicate",
+    "status": 201
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/posts/{postId}/preview",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/posts/{postId}/history",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/posts/{postId}/publish",
+    "status": 202
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/posts/{postId}/approvals",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/posts/{postId}/approvals",
+    "status": 201
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/posts/{postId}/approvals/decision",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/posts/{postId}/approvals/withdraw",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/posts/{postId}/comments",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/posts/{postId}/comments",
+    "status": 201
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workspaces/{workspaceId}/posts/{postId}/comments/{commentId}",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/calendar",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/variants/{variantId}/schedules",
+    "status": 201
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/workspaces/{workspaceId}/variants/{variantId}/schedules/{scheduleId}",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/variants/{variantId}/jobs",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/variants/{variantId}/retry",
+    "status": 202
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/variants/{variantId}/reconcile",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/media/{key}/{kind}",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/media/usage",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/media",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/media",
+    "status": 201
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/media/{mediaId}",
+    "status": 200
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/workspaces/{workspaceId}/media/{mediaId}",
+    "status": 200
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workspaces/{workspaceId}/media/{mediaId}",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/media/{mediaId}/download-link",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/media-folders",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/media-folders",
+    "status": 201
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/workspaces/{workspaceId}/media-folders/{folderId}",
+    "status": 200
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workspaces/{workspaceId}/media-folders/{folderId}",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/media-tags",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/media-tags",
+    "status": 201
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workspaces/{workspaceId}/media-tags/{tagId}",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/reports/overview",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/reports/posts",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/reports/exports",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/reports/exports",
+    "status": 202
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/reports/exports/{exportId}",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/reports/exports/{exportId}/download",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/conversations",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/conversations/{conversationId}/messages",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workspaces/{workspaceId}/conversations/{conversationId}/messages",
+    "status": 201
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/workspaces/{workspaceId}/conversations/{conversationId}",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/me/notifications",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/me/notifications/unread-count",
+    "status": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/me/notifications/read",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/notification-settings",
+    "status": 200
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/workspaces/{workspaceId}/notification-settings",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workspaces/{workspaceId}/audit-logs",
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/admin/settings",
+    "status": 200
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/admin/settings/{key}",
+    "status": 200
+  }
+]

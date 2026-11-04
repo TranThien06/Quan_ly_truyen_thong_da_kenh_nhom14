@@ -1,0 +1,1398 @@
+{
+  "info": {
+    "name": "Team 14 Social Media API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "workspaceId",
+      "value": "1"
+    },
+    {
+      "key": "postId",
+      "value": "1"
+    },
+    {
+      "key": "variantId",
+      "value": "1"
+    },
+    {
+      "key": "accountId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "auth: POST /auth/register",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"thien@example.com\",\n  \"password\": \"Password123!\",\n  \"full_name\": \"Thiện\"\n}"
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "auth: POST /auth/verify-email",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/verify-email",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"TOKEN_TRONG_EMAIL\"\n}"
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "auth: POST /auth/resend-verification",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/resend-verification",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"thien@example.com\"\n}"
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "auth: POST /auth/login",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"thien@example.com\",\n  \"password\": \"Password123!\"\n}"
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "auth: POST /auth/forgot-password",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/forgot-password",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"thien@example.com\"\n}"
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "auth: POST /auth/reset-password",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/reset-password",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"TOKEN_TRONG_EMAIL\",\n  \"password\": \"NewPassword123!\"\n}"
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "auth: POST /auth/logout",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/logout",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "auth: GET /me",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/me",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "auth: PATCH /me",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/v1/me",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Thiện\",\n  \"avatar_url\": null\n}"
+        }
+      }
+    },
+    {
+      "name": "auth: POST /me/change-password",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/me/change-password",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"old_password\": \"Password123!\",\n  \"password\": \"NewPassword123!\"\n}"
+        }
+      }
+    },
+    {
+      "name": "auth: POST /me/deletion-requests",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/me/deletion-requests",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"confirm\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "workspaces: GET /roles",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/roles",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "workspaces: GET /workspaces",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "workspaces: POST /workspaces",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Nhóm 14\",\n  \"slug\": \"nhom-14\",\n  \"timezone\": \"Asia/Ho_Chi_Minh\"\n}"
+        }
+      }
+    },
+    {
+      "name": "workspaces: POST /invitations/accept",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/invitations/accept",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"TOKEN_TRONG_EMAIL\"\n}"
+        }
+      }
+    },
+    {
+      "name": "workspaces: GET /workspaces/:workspaceId",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "workspaces: PATCH /workspaces/:workspaceId",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Nhóm 14 mới\"\n}"
+        }
+      }
+    },
+    {
+      "name": "workspaces: DELETE /workspaces/:workspaceId",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"confirm\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "workspaces: POST /workspaces/:workspaceId/transfer-owner",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/transfer-owner",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": \"2\"\n}"
+        }
+      }
+    },
+    {
+      "name": "workspaces: GET /workspaces/:workspaceId/members",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/members",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "workspaces: PATCH /workspaces/:workspaceId/members/:memberId",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/members/:memberId",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"role\": \"editor\",\n  \"status\": \"active\"\n}"
+        }
+      }
+    },
+    {
+      "name": "workspaces: DELETE /workspaces/:workspaceId/members/:memberId",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/members/:memberId",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"role\": \"editor\",\n  \"status\": \"active\"\n}"
+        }
+      }
+    },
+    {
+      "name": "workspaces: GET /workspaces/:workspaceId/invitations",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/invitations",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "workspaces: POST /workspaces/:workspaceId/invitations",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/invitations",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"dung@example.com\",\n  \"role\": \"editor\"\n}"
+        }
+      }
+    },
+    {
+      "name": "workspaces: POST /workspaces/:workspaceId/invitations/:invitationId/revoke",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/invitations/:invitationId/revoke",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "workspaces: GET /workspaces/:workspaceId/settings",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/settings",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "workspaces: PATCH /workspaces/:workspaceId/settings",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/settings",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"require_approval\": false,\n  \"allow_self_approval\": false\n}"
+        }
+      }
+    },
+    {
+      "name": "channels: GET /oauth/:platform/callback",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/oauth/:platform/callback",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "channels: GET /platforms",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/platforms",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "channels: GET /platforms/:platform/capabilities",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/platforms/:platform/capabilities",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "channels: GET /workspaces/:workspaceId/social-accounts",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/social-accounts",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "channels: POST /workspaces/:workspaceId/social-accounts/oauth/complete-selection",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/social-accounts/oauth/complete-selection",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"connection_token\": \"TOKEN_TU_CALLBACK\",\n  \"external_account_ids\": [\n    \"mock-facebook\"\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "channels: POST /workspaces/:workspaceId/social-accounts/oauth/:platform",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/social-accounts/oauth/:platform",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "channels: POST /workspaces/:workspaceId/social-accounts/:accountId/disconnect",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/social-accounts/{{accountId}}/disconnect",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "channels: POST /workspaces/:workspaceId/social-accounts/:accountId/sync/:kind",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/social-accounts/{{accountId}}/sync/:kind",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "posts: GET /workspaces/:workspaceId/posts",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "posts: POST /workspaces/:workspaceId/posts",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Giới thiệu sản phẩm\",\n  \"base_caption\": \"Nội dung chung\",\n  \"media_ids\": [\n    \"1\"\n  ],\n  \"variants\": [\n    {\n      \"social_account_id\": \"1\",\n      \"caption\": \"Nội dung Facebook\",\n      \"platform_options\": {}\n    }\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "posts: GET /workspaces/:workspaceId/posts/:postId",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts/{{postId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "posts: PUT /workspaces/:workspaceId/posts/:postId",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts/{{postId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Bài cập nhật\",\n  \"base_caption\": \"Nội dung mới\",\n  \"media_ids\": [\n    \"1\"\n  ],\n  \"variants\": [\n    {\n      \"social_account_id\": \"1\",\n      \"caption\": \"Nội dung Facebook\",\n      \"platform_options\": {}\n    }\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "posts: DELETE /workspaces/:workspaceId/posts/:postId",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts/{{postId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Bài cập nhật\",\n  \"base_caption\": \"Nội dung mới\",\n  \"media_ids\": [\n    \"1\"\n  ],\n  \"variants\": [\n    {\n      \"social_account_id\": \"1\",\n      \"caption\": \"Nội dung Facebook\",\n      \"platform_options\": {}\n    }\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "posts: POST /workspaces/:workspaceId/posts/:postId/duplicate",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts/{{postId}}/duplicate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "posts: GET /workspaces/:workspaceId/posts/:postId/preview",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts/{{postId}}/preview",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "posts: GET /workspaces/:workspaceId/posts/:postId/history",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts/{{postId}}/history",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "posts: POST /workspaces/:workspaceId/posts/:postId/publish",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts/{{postId}}/publish",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "posts: GET /workspaces/:workspaceId/posts/:postId/approvals",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts/{{postId}}/approvals",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "posts: POST /workspaces/:workspaceId/posts/:postId/approvals",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts/{{postId}}/approvals",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"note\": \"Nhờ duyệt bài\"\n}"
+        }
+      }
+    },
+    {
+      "name": "posts: POST /workspaces/:workspaceId/posts/:postId/approvals/decision",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts/{{postId}}/approvals/decision",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"decision\": \"approved\",\n  \"reason\": \"Nội dung phù hợp\"\n}"
+        }
+      }
+    },
+    {
+      "name": "posts: POST /workspaces/:workspaceId/posts/:postId/approvals/withdraw",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts/{{postId}}/approvals/withdraw",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "posts: GET /workspaces/:workspaceId/posts/:postId/comments",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts/{{postId}}/comments",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "posts: POST /workspaces/:workspaceId/posts/:postId/comments",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts/{{postId}}/comments",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"Cần chỉnh tiêu đề\",\n  \"parent_comment_id\": null\n}"
+        }
+      }
+    },
+    {
+      "name": "posts: DELETE /workspaces/:workspaceId/posts/:postId/comments/:commentId",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/posts/{{postId}}/comments/:commentId",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "schedules: GET /workspaces/:workspaceId/calendar",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/calendar",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "schedules: POST /workspaces/:workspaceId/variants/:variantId/schedules",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/variants/{{variantId}}/schedules",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"scheduled_at\": \"2027-01-01T09:00:00+07:00\"\n}"
+        }
+      }
+    },
+    {
+      "name": "schedules: PATCH /workspaces/:workspaceId/variants/:variantId/schedules/:scheduleId",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/variants/{{variantId}}/schedules/:scheduleId",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cancel\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "schedules: GET /workspaces/:workspaceId/variants/:variantId/jobs",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/variants/{{variantId}}/jobs",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "schedules: POST /workspaces/:workspaceId/variants/:variantId/retry",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/variants/{{variantId}}/retry",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "schedules: POST /workspaces/:workspaceId/variants/:variantId/reconcile",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/variants/{{variantId}}/reconcile",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"external_post_id\": \"MA_BAI_TREN_NEN_TANG\"\n}"
+        }
+      }
+    },
+    {
+      "name": "media: GET /media/:key/:kind",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/media/:key/:kind",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "media: GET /workspaces/:workspaceId/media/usage",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/media/usage",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "media: GET /workspaces/:workspaceId/media",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/media",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "media: POST /workspaces/:workspaceId/media",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/media",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "media: GET /workspaces/:workspaceId/media/:mediaId",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/media/:mediaId",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "media: PATCH /workspaces/:workspaceId/media/:mediaId",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/media/:mediaId",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"file_name\": \"anh-moi.png\",\n  \"folder_id\": null,\n  \"tag_ids\": [\n    \"1\"\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "media: DELETE /workspaces/:workspaceId/media/:mediaId",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/media/:mediaId",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"file_name\": \"anh-moi.png\",\n  \"folder_id\": null,\n  \"tag_ids\": [\n    \"1\"\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "media: GET /workspaces/:workspaceId/media/:mediaId/download-link",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/media/:mediaId/download-link",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "media: GET /workspaces/:workspaceId/media-folders",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/media-folders",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "media: POST /workspaces/:workspaceId/media-folders",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/media-folders",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Chiến dịch\",\n  \"parent_folder_id\": null\n}"
+        }
+      }
+    },
+    {
+      "name": "media: PUT /workspaces/:workspaceId/media-folders/:folderId",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/media-folders/:folderId",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Chiến dịch mới\",\n  \"parent_folder_id\": null\n}"
+        }
+      }
+    },
+    {
+      "name": "media: DELETE /workspaces/:workspaceId/media-folders/:folderId",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/media-folders/:folderId",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"confirm\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "media: GET /workspaces/:workspaceId/media-tags",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/media-tags",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "media: POST /workspaces/:workspaceId/media-tags",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/media-tags",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Sản phẩm\"\n}"
+        }
+      }
+    },
+    {
+      "name": "media: DELETE /workspaces/:workspaceId/media-tags/:tagId",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/media-tags/:tagId",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reports: GET /workspaces/:workspaceId/reports/overview",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/reports/overview",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reports: GET /workspaces/:workspaceId/reports/posts",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/reports/posts",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reports: GET /workspaces/:workspaceId/reports/exports",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/reports/exports",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reports: POST /workspaces/:workspaceId/reports/exports",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/reports/exports",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"from\": \"2026-01-01\",\n  \"to\": \"2026-12-31\",\n  \"report_type\": \"channel_overview\",\n  \"file_format\": \"xlsx\"\n}"
+        }
+      }
+    },
+    {
+      "name": "reports: GET /workspaces/:workspaceId/reports/exports/:exportId",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/reports/exports/:exportId",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reports: GET /workspaces/:workspaceId/reports/exports/:exportId/download",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/reports/exports/:exportId/download",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "inbox: GET /workspaces/:workspaceId/conversations",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/conversations",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "inbox: GET /workspaces/:workspaceId/conversations/:conversationId/messages",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/conversations/:conversationId/messages",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "inbox: PATCH /workspaces/:workspaceId/conversations/:conversationId",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/conversations/:conversationId",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"resolved\",\n  \"assigned_to\": null\n}"
+        }
+      }
+    },
+    {
+      "name": "inbox: POST /workspaces/:workspaceId/conversations/:conversationId/messages",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/conversations/:conversationId/messages",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"Xin chào bạn\",\n  \"request_id\": \"d856e670-6475-467e-a84e-10843b121810\"\n}"
+        }
+      }
+    },
+    {
+      "name": "notifications: GET /me/notifications",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/me/notifications",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "notifications: GET /me/notifications/unread-count",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/me/notifications/unread-count",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "notifications: POST /me/notifications/read",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/me/notifications/read",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"all\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "notifications: GET /workspaces/:workspaceId/notification-settings",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/notification-settings",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "notifications: PUT /workspaces/:workspaceId/notification-settings",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/notification-settings",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"post_failed\",\n  \"in_app_enabled\": true,\n  \"email_enabled\": false\n}"
+        }
+      }
+    },
+    {
+      "name": "admin: GET /workspaces/:workspaceId/audit-logs",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/audit-logs",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "admin: GET /admin/settings",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/admin/settings",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "admin: PUT /admin/settings/:key",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/admin/settings/:key",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"value\": 3\n}"
+        }
+      }
+    }
+  ]
+}

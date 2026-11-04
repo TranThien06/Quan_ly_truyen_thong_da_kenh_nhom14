@@ -48,7 +48,7 @@ CREATE TABLE workspaces (
   UNIQUE KEY uq_workspaces_slug (slug),
   KEY idx_workspaces_owner (owner_id),
   CONSTRAINT fk_workspaces_owner FOREIGN KEY (owner_id) REFERENCES users (user_id)
-    ON DELETE RESTRICT ON UPDATE CASCADE
+    ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE roles (
@@ -74,9 +74,9 @@ CREATE TABLE role_permissions (
   PRIMARY KEY (role_id, permission_id),
   KEY idx_rp_permission (permission_id),
   CONSTRAINT fk_rp_role       FOREIGN KEY (role_id)       REFERENCES roles (role_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_rp_permission FOREIGN KEY (permission_id) REFERENCES permissions (permission_id)
-    ON DELETE CASCADE ON UPDATE CASCADE
+    ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE workspace_members (
@@ -91,11 +91,11 @@ CREATE TABLE workspace_members (
   KEY idx_member_user (user_id),
   KEY idx_member_role (role_id),
   CONSTRAINT fk_member_ws   FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_member_user FOREIGN KEY (user_id)      REFERENCES users (user_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_member_role FOREIGN KEY (role_id)      REFERENCES roles (role_id)
-    ON DELETE RESTRICT ON UPDATE CASCADE
+    ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE workspace_invitations (
@@ -115,11 +115,11 @@ CREATE TABLE workspace_invitations (
   KEY idx_invitation_role (role_id),
   KEY idx_invitation_inviter (invited_by),
   CONSTRAINT fk_inv_ws      FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_inv_role    FOREIGN KEY (role_id)      REFERENCES roles (role_id)
-    ON DELETE RESTRICT ON UPDATE CASCADE,
+    ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_inv_inviter FOREIGN KEY (invited_by)   REFERENCES users (user_id)
-    ON DELETE RESTRICT ON UPDATE CASCADE
+    ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- =====================================================================
@@ -157,13 +157,13 @@ CREATE TABLE social_accounts (
   KEY idx_sa_linked (linked_account_id),
   KEY idx_sa_connected_by (connected_by),
   CONSTRAINT fk_sa_ws        FOREIGN KEY (workspace_id)      REFERENCES workspaces (workspace_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_sa_platform  FOREIGN KEY (platform_id)       REFERENCES platforms (platform_id)
-    ON DELETE RESTRICT ON UPDATE CASCADE,
+    ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_sa_linked    FOREIGN KEY (linked_account_id) REFERENCES social_accounts (social_account_id)
-    ON DELETE SET NULL ON UPDATE CASCADE,
+    ON DELETE SET NULL ON UPDATE RESTRICT,
   CONSTRAINT fk_sa_connected_by FOREIGN KEY (connected_by)   REFERENCES users (user_id)
-    ON DELETE RESTRICT ON UPDATE CASCADE
+    ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- Quan he 1-1 voi social_accounts: token luu rieng de de ma hoa / phan quyen truy cap
@@ -182,7 +182,7 @@ CREATE TABLE social_account_tokens (
   UNIQUE KEY uq_sat_account (social_account_id),
   KEY idx_sat_expires (expires_at),
   CONSTRAINT fk_sat_account FOREIGN KEY (social_account_id) REFERENCES social_accounts (social_account_id)
-    ON DELETE CASCADE ON UPDATE CASCADE
+    ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- =====================================================================
@@ -202,11 +202,11 @@ CREATE TABLE media_folders (
   KEY idx_folder_parent (parent_folder_id),
   KEY idx_folder_creator (created_by),
   CONSTRAINT fk_folder_ws      FOREIGN KEY (workspace_id)     REFERENCES workspaces (workspace_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_folder_parent  FOREIGN KEY (parent_folder_id) REFERENCES media_folders (folder_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_folder_creator FOREIGN KEY (created_by)       REFERENCES users (user_id)
-    ON DELETE RESTRICT ON UPDATE CASCADE
+    ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE media_assets (
@@ -232,12 +232,12 @@ CREATE TABLE media_assets (
   KEY idx_media_folder (folder_id),
   KEY idx_media_uploader (uploaded_by),
   CONSTRAINT fk_media_ws       FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   -- FK kep: thu muc phai cung workspace voi media
   CONSTRAINT fk_media_folder   FOREIGN KEY (folder_id, workspace_id) REFERENCES media_folders (folder_id, workspace_id)
-    ON DELETE RESTRICT ON UPDATE CASCADE,
+    ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_media_uploader FOREIGN KEY (uploaded_by)  REFERENCES users (user_id)
-    ON DELETE RESTRICT ON UPDATE CASCADE
+    ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE media_tags (
@@ -247,7 +247,7 @@ CREATE TABLE media_tags (
   PRIMARY KEY (tag_id),
   UNIQUE KEY uq_tag_ws_name (workspace_id, name),
   CONSTRAINT fk_tag_ws FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
-    ON DELETE CASCADE ON UPDATE CASCADE
+    ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE media_asset_tags (
@@ -256,9 +256,9 @@ CREATE TABLE media_asset_tags (
   PRIMARY KEY (media_id, tag_id),
   KEY idx_mat_tag (tag_id),
   CONSTRAINT fk_mat_media FOREIGN KEY (media_id) REFERENCES media_assets (media_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_mat_tag   FOREIGN KEY (tag_id)   REFERENCES media_tags (tag_id)
-    ON DELETE CASCADE ON UPDATE CASCADE
+    ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- =====================================================================
@@ -283,9 +283,9 @@ CREATE TABLE posts (
   KEY idx_posts_ws_status (workspace_id, status),
   KEY idx_posts_creator (created_by),
   CONSTRAINT fk_posts_ws      FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_posts_creator FOREIGN KEY (created_by)   REFERENCES users (user_id)
-    ON DELETE RESTRICT ON UPDATE CASCADE
+    ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- Noi dung rieng cho tung kenh (1 bai -> nhieu kenh)
@@ -311,9 +311,9 @@ CREATE TABLE post_variants (
   KEY idx_variant_published (published_at),
   -- FK kep: bai va kenh deu phai thuoc cung workspace
   CONSTRAINT fk_variant_post    FOREIGN KEY (post_id, workspace_id)
-    REFERENCES posts (post_id, workspace_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    REFERENCES posts (post_id, workspace_id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_variant_account FOREIGN KEY (social_account_id, workspace_id)
-    REFERENCES social_accounts (social_account_id, workspace_id) ON DELETE RESTRICT ON UPDATE CASCADE
+    REFERENCES social_accounts (social_account_id, workspace_id) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- Anh/video dinh kem bai (dung chung cho cac kenh)
@@ -328,9 +328,9 @@ CREATE TABLE post_media (
   UNIQUE KEY uq_pm_post_order (post_id, sort_order),
   KEY idx_pm_media (media_id),
   CONSTRAINT fk_pm_post  FOREIGN KEY (post_id, workspace_id)
-    REFERENCES posts (post_id, workspace_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    REFERENCES posts (post_id, workspace_id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_pm_media FOREIGN KEY (media_id, workspace_id)
-    REFERENCES media_assets (media_id, workspace_id) ON DELETE RESTRICT ON UPDATE CASCADE
+    REFERENCES media_assets (media_id, workspace_id) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- =====================================================================
@@ -351,9 +351,9 @@ CREATE TABLE schedules (
   KEY idx_sched_variant (variant_id),
   KEY idx_sched_creator (created_by),
   CONSTRAINT fk_sched_variant FOREIGN KEY (variant_id) REFERENCES post_variants (variant_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_sched_creator FOREIGN KEY (created_by) REFERENCES users (user_id)
-    ON DELETE RESTRICT ON UPDATE CASCADE
+    ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- Moi lan thu dang (ke ca dang ngay va retry) la 1 dong
@@ -375,9 +375,9 @@ CREATE TABLE publish_jobs (
   KEY idx_job_status_retry (status, next_retry_at),
   KEY idx_job_schedule (schedule_id),
   CONSTRAINT fk_job_variant  FOREIGN KEY (variant_id)  REFERENCES post_variants (variant_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_job_schedule FOREIGN KEY (schedule_id) REFERENCES schedules (schedule_id)
-    ON DELETE SET NULL ON UPDATE CASCADE
+    ON DELETE SET NULL ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- =====================================================================
@@ -399,11 +399,11 @@ CREATE TABLE approval_requests (
   KEY idx_appr_requester (requested_by),
   KEY idx_appr_resolver (resolved_by),
   CONSTRAINT fk_appr_post      FOREIGN KEY (post_id)      REFERENCES posts (post_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_appr_requester FOREIGN KEY (requested_by) REFERENCES users (user_id)
-    ON DELETE RESTRICT ON UPDATE CASCADE,
+    ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_appr_resolver  FOREIGN KEY (resolved_by)  REFERENCES users (user_id)
-    ON DELETE SET NULL ON UPDATE CASCADE
+    ON DELETE SET NULL ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE post_comments (
@@ -419,11 +419,11 @@ CREATE TABLE post_comments (
   KEY idx_pc_user (user_id),
   KEY idx_pc_parent (parent_comment_id),
   CONSTRAINT fk_pc_post   FOREIGN KEY (post_id)           REFERENCES posts (post_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_pc_user   FOREIGN KEY (user_id)           REFERENCES users (user_id)
-    ON DELETE RESTRICT ON UPDATE CASCADE,
+    ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_pc_parent FOREIGN KEY (parent_comment_id) REFERENCES post_comments (comment_id)
-    ON DELETE CASCADE ON UPDATE CASCADE
+    ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE post_status_history (
@@ -438,9 +438,9 @@ CREATE TABLE post_status_history (
   KEY idx_psh_post (post_id, changed_at),
   KEY idx_psh_user (changed_by),
   CONSTRAINT fk_psh_post FOREIGN KEY (post_id)    REFERENCES posts (post_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_psh_user FOREIGN KEY (changed_by) REFERENCES users (user_id)
-    ON DELETE SET NULL ON UPDATE CASCADE
+    ON DELETE SET NULL ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- =====================================================================
@@ -462,7 +462,7 @@ CREATE TABLE account_daily_metrics (
   synced_at         DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (social_account_id, metric_date),
   CONSTRAINT fk_adm_account FOREIGN KEY (social_account_id) REFERENCES social_accounts (social_account_id)
-    ON DELETE CASCADE ON UPDATE CASCADE
+    ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- So lieu theo bai dang (moi lan dong bo la 1 snapshot)
@@ -482,7 +482,7 @@ CREATE TABLE post_metric_snapshots (
   PRIMARY KEY (snapshot_id),
   UNIQUE KEY uq_pms_variant_time (variant_id, collected_at),
   CONSTRAINT fk_pms_variant FOREIGN KEY (variant_id) REFERENCES post_variants (variant_id)
-    ON DELETE CASCADE ON UPDATE CASCADE
+    ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE report_exports (
@@ -500,9 +500,9 @@ CREATE TABLE report_exports (
   KEY idx_re_ws (workspace_id, created_at),
   KEY idx_re_user (created_by),
   CONSTRAINT fk_re_ws   FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_re_user FOREIGN KEY (created_by)   REFERENCES users (user_id)
-    ON DELETE RESTRICT ON UPDATE CASCADE
+    ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- =====================================================================
@@ -528,11 +528,11 @@ CREATE TABLE conversations (
   KEY idx_conv_variant (variant_id),
   KEY idx_conv_assignee (assigned_to),
   CONSTRAINT fk_conv_account  FOREIGN KEY (social_account_id, workspace_id)
-    REFERENCES social_accounts (social_account_id, workspace_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    REFERENCES social_accounts (social_account_id, workspace_id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_conv_variant  FOREIGN KEY (variant_id)  REFERENCES post_variants (variant_id)
-    ON DELETE SET NULL ON UPDATE CASCADE,
+    ON DELETE SET NULL ON UPDATE RESTRICT,
   CONSTRAINT fk_conv_assignee FOREIGN KEY (assigned_to) REFERENCES users (user_id)
-    ON DELETE SET NULL ON UPDATE CASCADE
+    ON DELETE SET NULL ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE messages (
@@ -551,9 +551,9 @@ CREATE TABLE messages (
   KEY idx_msg_conv_time (conversation_id, sent_at),
   KEY idx_msg_sender (sent_by_user_id),
   CONSTRAINT fk_msg_conv FOREIGN KEY (conversation_id)  REFERENCES conversations (conversation_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_msg_user FOREIGN KEY (sent_by_user_id)  REFERENCES users (user_id)
-    ON DELETE SET NULL ON UPDATE CASCADE
+    ON DELETE SET NULL ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- =====================================================================
@@ -579,9 +579,9 @@ CREATE TABLE notifications (
   KEY idx_noti_ws (workspace_id),
   KEY idx_noti_email (email_status),
   CONSTRAINT fk_noti_user FOREIGN KEY (user_id)      REFERENCES users (user_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_noti_ws   FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
-    ON DELETE CASCADE ON UPDATE CASCADE
+    ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE notification_settings (
@@ -593,9 +593,9 @@ CREATE TABLE notification_settings (
   PRIMARY KEY (user_id, workspace_id, type),
   KEY idx_ns_ws (workspace_id),
   CONSTRAINT fk_ns_user FOREIGN KEY (user_id)      REFERENCES users (user_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_ns_ws   FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
-    ON DELETE CASCADE ON UPDATE CASCADE
+    ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- =====================================================================
@@ -620,9 +620,9 @@ CREATE TABLE audit_logs (
   KEY idx_audit_entity (entity_type, entity_id),
   -- Giu lai nhat ky ke ca khi workspace/user bi xoa
   CONSTRAINT fk_audit_ws   FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
-    ON DELETE SET NULL ON UPDATE CASCADE,
+    ON DELETE SET NULL ON UPDATE RESTRICT,
   CONSTRAINT fk_audit_user FOREIGN KEY (user_id)      REFERENCES users (user_id)
-    ON DELETE SET NULL ON UPDATE CASCADE
+    ON DELETE SET NULL ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- Cau hinh toan he thong
@@ -635,7 +635,7 @@ CREATE TABLE system_settings (
   PRIMARY KEY (setting_key),
   KEY idx_ss_updater (updated_by),
   CONSTRAINT fk_ss_user FOREIGN KEY (updated_by) REFERENCES users (user_id)
-    ON DELETE SET NULL ON UPDATE CASCADE
+    ON DELETE SET NULL ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 -- Cau hinh rieng tung workspace
@@ -648,9 +648,9 @@ CREATE TABLE workspace_settings (
   PRIMARY KEY (workspace_id, setting_key),
   KEY idx_wss_updater (updated_by),
   CONSTRAINT fk_wss_ws   FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT fk_wss_user FOREIGN KEY (updated_by)   REFERENCES users (user_id)
-    ON DELETE SET NULL ON UPDATE CASCADE
+    ON DELETE SET NULL ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
 
