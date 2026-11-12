@@ -76,6 +76,31 @@ Mời: `{"email":"dung@example.com","role":"editor"}`. Nhận: `{"token":"TOKEN_
 
 Kết nối lại cập nhật token trên cùng bản ghi. `GET W/social-accounts` xem trạng thái; `POST W/social-accounts/{id}/disconnect` ngắt, xóa token, hủy lịch chưa chạy. Nếu đang gửi bài, trả 409; xử lý xong rồi ngắt. `GET /platforms/{platform}/capabilities` cho biết chế độ và khả năng; live_verified hiện luôn false vì chưa chạy tài khoản thật.
 
+### Kiểm thử Facebook Page thật
+
+1. Đặt `SOCIAL_MODE=live`, `APP_URL=https://<tên-miền-API>`, `META_APP_ID`, `META_APP_SECRET` và `META_API_VERSION` trong cấu hình backend. Đăng ký chính xác `https://<tên-miền-API>/api/v1/oauth/facebook/callback` trong **Valid OAuth Redirect URIs** của Meta App.
+2. Đăng nhập API bằng tài khoản có quyền `channel.manage`. Mở `authorization_url` bằng tài khoản Facebook có quyền trên Page và có thể dùng Meta App. Kiểm tra các quyền Pages được yêu cầu trong Meta App, gồm `pages_show_list` để liệt kê Page.
+3. Callback trả JSON tại URL của backend. Lấy `connection_token` và ID Page từ danh sách, rồi gọi `complete-selection` với Bearer token của người đã bắt đầu OAuth trong cùng workspace.
+4. Gọi `GET W/social-accounts` và đối chiếu ID Facebook, tên, ảnh (nếu Meta cung cấp) và trạng thái `connected`. Kết nối lại cùng Page và kiểm tra ID bản ghi giữ nguyên.
+
+Backend đổi mã ủy quyền lấy user token dài hạn, dùng token đó để lấy danh sách Page và chỉ lưu Page token. Dữ liệu OAuth tạm và Page token lưu trong MySQL đều được mã hóa bằng `TOKEN_ENCRYPTION_KEY`. Callback từ chối state đã dùng hoặc hết hạn, trả `OAUTH_DENIED` nếu người dùng hủy và `NO_FACEBOOK_PAGES` nếu Meta không trả Page có token. Bắt đầu lại OAuth sau khi xử lý lỗi. Nếu chạy qua reverse proxy, cấu hình log của proxy để bỏ query string của callback.
+
+### Kết nối Instagram Business hoặc Creator
+
+1. Liên kết tài khoản Instagram chuyên nghiệp với Facebook Page trong Meta và kết nối Page đó vào workspace qua OAuth Facebook.
+2. Trong chế độ live, đăng ký thêm `https://<tên-miền-API>/api/v1/oauth/instagram/callback` trong Meta App. Cấp `pages_show_list`, `pages_read_engagement`, `instagram_basic`, `instagram_content_publish` và `instagram_manage_insights`. Callback trả `INSTAGRAM_PERMISSIONS_MISSING` (403) nếu thiếu quyền.
+3. Bắt đầu OAuth qua `POST W/social-accounts/oauth/instagram`. Callback trả tài khoản chuyên nghiệp Meta cho phép truy cập cùng `linked_page_external_id`. Nếu danh sách trống, API trả `NO_ELIGIBLE_INSTAGRAM_ACCOUNTS` (422).
+4. Gửi ID Instagram vào `complete-selection`. Nếu Page chưa kết nối trong workspace, API trả `LINK_PAGE_FIRST` (422). Sau khi kết nối, `GET W/social-accounts` trả `linked_account_id` là ID nội bộ của Page. Trong mock, kết nối `mock-facebook` trước rồi chọn `mock-instagram`.
+
+Meta trả cả Business và Creator qua trường `instagram_business_account`. Luồng Facebook Login này lưu cả hai dưới `account_type=business`.
+
+### Kết nối TikTok qua Login Kit
+
+1. Đặt `SOCIAL_MODE=live`, `APP_URL=https://<tên-miền-API>`, `TIKTOK_CLIENT_KEY` và `TIKTOK_CLIENT_SECRET` ở backend. Đăng ký chính xác `https://<tên-miền-API>/api/v1/oauth/tiktok/callback` trong Login Kit.
+2. Quyền mặc định là `user.info.basic`. Nếu ứng dụng đã được TikTok duyệt quyền cho các tính năng tương ứng, thêm `user.info.stats,video.publish,video.list` vào `TIKTOK_EXTRA_SCOPES` theo nhu cầu.
+3. Gọi `POST W/social-accounts/oauth/tiktok` với quyền `channel.manage`, mở URL trả về và cấp quyền. Callback trả `OAUTH_DENIED` (400) khi người dùng từ chối hoặc hủy, hoặc `TIKTOK_PERMISSIONS_MISSING` (403) khi thiếu quyền đã yêu cầu. Bắt đầu lại OAuth sau khi xử lý lỗi.
+4. Dùng `connection_token` và ID tài khoản từ callback để gọi `complete-selection` bằng cùng người dùng và workspace. `GET W/social-accounts` trả ID TikTok, tên hiển thị, ảnh đại diện nếu có và trạng thái `connected`. Backend lưu access token và refresh token dưới dạng mã hóa cùng hạn của access token.
+
 `POST W/social-accounts/{id}/sync/metrics` hoặc `/sync/inbox` yêu cầu worker đồng bộ ở chu kỳ tiếp theo; cần channel.manage.
 
 ## 4. Media

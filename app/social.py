@@ -1,6 +1,5 @@
 """Adapter mạng xã hội. Mock không gọi mạng và luôn trả URL có nhãn demo."""
 
-import base64
 import hashlib
 import os
 from urllib.parse import urlencode
@@ -16,6 +15,15 @@ class ProviderError(Exception):
         self.code, self.retryable, self.ambiguous, self.retry_after = code, retryable, ambiguous, retry_after
 
 
+INSTAGRAM_SCOPES = (
+    "pages_show_list",
+    "pages_read_engagement",
+    "instagram_basic",
+    "instagram_content_publish",
+    "instagram_manage_insights",
+)
+
+
 def call(url, *, method="GET", access_token=None, params=None, data=None, payload=None, publishing=False):
     headers = {"Authorization": f"Bearer {access_token}"} if access_token else {}
     try:
@@ -28,6 +36,8 @@ def call(url, *, method="GET", access_token=None, params=None, data=None, payloa
         result = response.json()
     except ValueError:
         result = {}
+    if not isinstance(result, dict):
+        result = {}
     error = result.get("error")
     code = str(error.get("code")) if isinstance(error, dict) else str(error or "")
     if not response.is_success or (error and code != "ok"):
@@ -35,7 +45,9 @@ def call(url, *, method="GET", access_token=None, params=None, data=None, payloa
         expired = response.status_code == 401 or code == "190"
         retry_after = response.headers.get("retry-after", "60")
         raise ProviderError(
-            "TOKEN_EXPIRED" if expired else "RATE_LIMIT" if rate else "PROVIDER_REJECTED",
+            "TOKEN_EXPIRED" if expired else "RATE_LIMIT" if rate else
+            "PROVIDER_SCOPE_MISSING" if code in ("scope_not_authorized", "invalid_scope") else
+            "PROVIDER_REJECTED",
             retryable=rate or (not publishing and response.status_code >= 500),
             ambiguous=publishing and response.status_code >= 500,
             retry_after=int(retry_after) if retry_after.isdigit() else 60,
@@ -108,28 +120,51 @@ def authorize_url(platform, state, verifier):
     if settings.social_mode == "mock":
         return f"{redirect}?{urlencode({'state': state, 'code': 'mock'})}"
     if platform == "tiktok":
-        check(os.getenv("TIKTOK_CLIENT_KEY"), 503, "NOT_CONFIGURED", "Thiếu TIKTOK_CLIENT_KEY")
-        challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip("=")
         params = {
-            "client_key": os.environ["TIKTOK_CLIENT_KEY"],
+            "client_key": tiktok_client()["client_key"],
             "response_type": "code",
-            "scope": "user.info.basic,user.info.stats,video.publish,video.list",
+            "scope": ",".join(tiktok_scopes()),
             "redirect_uri": redirect,
             "state": state,
-            "code_challenge": challenge,
-            "code_challenge_method": "S256",
         }
         return "https://www.tiktok.com/v2/auth/authorize/?" + urlencode(params)
     graph_base()
-    check(os.getenv("META_APP_ID"), 503, "NOT_CONFIGURED", "Thiếu META_APP_ID")
+    client = meta_client()
+    if platform == "facebook":
+        scopes = [
+            "pages_show_list", "pages_read_engagement", "pages_manage_posts",
+            "pages_messaging", "pages_manage_engagement", "pages_read_user_content",
+        ]
+    else:
+        scopes = INSTAGRAM_SCOPES
     params = {
-        "client_id": os.environ["META_APP_ID"],
+        "client_id": client["client_id"],
         "redirect_uri": redirect,
         "state": state,
         "response_type": "code",
-        "scope": "pages_show_list,pages_read_engagement,pages_manage_posts,instagram_basic,instagram_content_publish,instagram_manage_insights,pages_messaging,pages_manage_engagement,pages_read_user_content",
+        "scope": ",".join(scopes),
+        "auth_type": "rerequest",
     }
     return f"https://www.facebook.com/{os.environ['META_API_VERSION']}/dialog/oauth?{urlencode(params)}"
+
+
+def tiktok_client():
+    key = os.getenv("TIKTOK_CLIENT_KEY")
+    secret = os.getenv("TIKTOK_CLIENT_SECRET")
+    check(key and secret, 503, "NOT_CONFIGURED", "Thiếu TIKTOK_CLIENT_KEY hoặc TIKTOK_CLIENT_SECRET")
+    return {"client_key": key, "client_secret": secret}
+
+
+def tiktok_scopes():
+    extra = os.getenv("TIKTOK_EXTRA_SCOPES", "").split(",")
+    return tuple(dict.fromkeys(["user.info.basic", *(scope.strip() for scope in extra if scope.strip())]))
+
+
+def meta_client():
+    app_id = os.getenv("META_APP_ID")
+    secret = os.getenv("META_APP_SECRET")
+    check(app_id and secret, 503, "NOT_CONFIGURED", "Thiếu META_APP_ID hoặc META_APP_SECRET")
+    return {"client_id": app_id, "client_secret": secret}
 
 
 def exchange_code(platform, code, verifier):
@@ -147,6 +182,7 @@ def exchange_code(platform, code, verifier):
                 "access_token": "mock-token",
                 "refresh_token": "mock-refresh",
                 "expires_in": 86400,
+                **({"linked_page_external_id": "mock-facebook"} if platform == "instagram" else {}),
             }
         ]
     redirect = f"{settings.app_url}/api/v1/oauth/{platform}/callback"
@@ -155,17 +191,32 @@ def exchange_code(platform, code, verifier):
             "https://open.tiktokapis.com/v2/oauth/token/",
             method="POST",
             data={
-                "client_key": os.getenv("TIKTOK_CLIENT_KEY"),
-                "client_secret": os.getenv("TIKTOK_CLIENT_SECRET"),
+                **tiktok_client(),
                 "code": code,
                 "grant_type": "authorization_code",
                 "redirect_uri": redirect,
-                "code_verifier": verifier,
             },
         )
-        user = tiktok("user/info/?fields=open_id,display_name,avatar_url", result["access_token"])["data"][
-            "user"
-        ]
+        check(
+            all(isinstance(result.get(key), str) and result[key] for key in
+                ("access_token", "refresh_token", "open_id"))
+            and isinstance(result.get("scope"), str)
+            and type(result.get("expires_in")) is int and result["expires_in"] > 0,
+            502, "TIKTOK_INVALID_TOKEN_RESPONSE", "TikTok trả về dữ liệu token không hợp lệ",
+        )
+        missing = set(tiktok_scopes()) - {scope.strip() for scope in result["scope"].split(",")}
+        check(
+            not missing, 403, "TIKTOK_PERMISSIONS_MISSING",
+            "TikTok chưa cấp quyền: " + ", ".join(sorted(missing)),
+        )
+        profile = tiktok("user/info/?fields=open_id,display_name,avatar_url", result["access_token"])
+        data = profile.get("data")
+        user = data.get("user") if isinstance(data, dict) else None
+        check(
+            isinstance(user, dict) and user.get("open_id") == result["open_id"]
+            and isinstance(user.get("display_name"), str) and user["display_name"],
+            502, "TIKTOK_INVALID_PROFILE", "TikTok trả về thông tin tài khoản không hợp lệ",
+        )
         return [
             {
                 **result,
@@ -176,37 +227,55 @@ def exchange_code(platform, code, verifier):
                 "platform": platform,
             }
         ]
+    endpoint = f"{graph_base()}/oauth/access_token"
+    client = meta_client()
+    result = call(endpoint, params={**client, "code": code, "redirect_uri": redirect})
+    user_token = result.get("access_token")
+    check(user_token, 502, "META_TOKEN_MISSING", "Meta chưa trả token người dùng")
     result = call(
-        f"{graph_base()}/oauth/access_token",
-        params={
-            "client_id": os.getenv("META_APP_ID"),
-            "client_secret": os.getenv("META_APP_SECRET"),
-            "code": code,
-            "redirect_uri": redirect,
-        },
+        endpoint,
+        params={**client, "grant_type": "fb_exchange_token", "fb_exchange_token": user_token},
     )
+    user_token = result.get("access_token")
+    check(user_token, 502, "META_TOKEN_MISSING", "Meta chưa trả token người dùng dài hạn")
+    fields = "id,name,access_token,picture"
+    if platform == "instagram":
+        granted = {
+            entry["permission"]
+            for entry in graph_list("me/permissions", user_token, {})
+            if entry.get("status") == "granted"
+        }
+        missing = [scope for scope in INSTAGRAM_SCOPES if scope not in granted]
+        check(
+            not missing, 403, "INSTAGRAM_PERMISSIONS_MISSING",
+            "Thiếu quyền Meta: " + ", ".join(missing),
+        )
+        fields = "id,access_token,instagram_business_account{id,username,profile_picture_url}"
+
     pages = graph_list(
         "me/accounts",
-        result["access_token"],
-        {
-            "fields": "id,name,access_token,instagram_business_account{id,username,profile_picture_url}",
-            "limit": 100,
-        },
+        user_token,
+        {"fields": fields, "limit": 100},
     )
     accounts = []
     for page in pages:
+        if not page.get("access_token"):
+            continue
         if platform == "facebook":
             accounts.append(
                 {
                     "external_account_id": page["id"],
                     "account_name": page["name"],
+                    "avatar_url": (page.get("picture") or {}).get("data", {}).get("url"),
                     "account_type": "page",
                     "platform": platform,
                     "access_token": page["access_token"],
                 }
             )
-        elif page.get("instagram_business_account"):
-            user = page["instagram_business_account"]
+        else:
+            user = page.get("instagram_business_account") or {}
+            if not (page.get("id") and user.get("id") and user.get("username")):
+                continue
             accounts.append(
                 {
                     "external_account_id": user["id"],
@@ -218,6 +287,13 @@ def exchange_code(platform, code, verifier):
                     "linked_page_external_id": page["id"],
                 }
             )
+    if platform == "facebook":
+        check(accounts, 422, "NO_FACEBOOK_PAGES", "Không tìm thấy Page được cấp quyền kết nối")
+    else:
+        check(
+            accounts, 422, "NO_ELIGIBLE_INSTAGRAM_ACCOUNTS",
+            "Không tìm thấy Instagram Business hoặc Creator liên kết với Facebook Page được cấp quyền",
+        )
     return accounts
 
 

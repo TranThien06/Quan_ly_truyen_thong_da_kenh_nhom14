@@ -196,6 +196,30 @@ def test_workspace_isolation_owner_and_privilege_escalation(scenario):
     s.api("PATCH", s.base + f"/members/{manager['member_id']}", {"role": "admin"}, s.manager["token"], 403)
 
 
+def test_tiktok_oauth_persists_channel_and_handles_denial(scenario):
+    s = scenario
+    start = s.base + "/social-accounts/oauth/tiktok"
+    result = s.api("POST", start, {}, s.owner["token"])
+    url = urlparse(result["authorization_url"])
+    state = parse_qs(url.query)["state"][0]
+    denied = s.client.get(url.path, params={"state": state, "error": "access_denied"})
+    assert denied.status_code == 400
+    assert "OAUTH_DENIED" in denied.text
+    assert s.client.get(result["authorization_url"]).status_code == 422
+
+    account_id = s.connect("tiktok")
+    accounts = s.api("GET", s.base + "/social-accounts", token=s.owner["token"])
+    channel = next(a for a in accounts if a["social_account_id"] == account_id)
+    assert channel["external_account_id"] == "mock-tiktok"
+    assert channel["account_name"] == "DEMO tiktok" and channel["status"] == "connected"
+    with transaction() as db:
+        stored = db.one("SELECT * FROM social_account_tokens WHERE social_account_id=%s", (account_id,))
+    assert stored["access_token_enc"] != "mock-token"
+    assert decrypt(stored["access_token_enc"]) == "mock-token"
+    assert decrypt(stored["refresh_token_enc"]) == "mock-refresh"
+    assert stored["expires_at"]
+
+
 def test_oauth_reconnect_tokens_and_images(scenario):
     s = scenario
     assert s.connect() == s.channel_id
@@ -497,3 +521,14 @@ def test_signed_webhook_and_deduplication(scenario, monkeypatch):
         )
     with transaction() as db:
         assert len(db.all("SELECT * FROM webhook_receipts")) == 1
+
+
+def test_instagram_connection_stores_linked_page(scenario):
+    s = scenario
+    page_id = s.connect()
+    instagram_id = s.connect("instagram")
+    assert s.connect("instagram") == instagram_id
+    accounts = s.api("GET", s.base + "/social-accounts", token=s.owner["token"])
+    instagram = next(account for account in accounts if account["social_account_id"] == instagram_id)
+    assert instagram["platform"] == "instagram"
+    assert instagram["linked_account_id"] == page_id

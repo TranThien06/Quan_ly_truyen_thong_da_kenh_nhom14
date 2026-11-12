@@ -732,6 +732,51 @@
         }
       }
     },
+    "/api/v1/workspaces/{workspace_id}/me/permissions": {
+      "get": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "My Workspace Permissions",
+        "operationId": "my_workspace_permissions_api_v1_workspaces__workspace_id__me_permissions_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workspace Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/workspaces/{workspace_id}/members": {
       "get": {
         "tags": [
@@ -1572,16 +1617,44 @@
             "required": true,
             "schema": {
               "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
               "title": "State"
             }
           },
           {
             "name": "code",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "string",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "title": "Code"
+            }
+          },
+          {
+            "name": "error",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Error"
             }
           }
         ],
