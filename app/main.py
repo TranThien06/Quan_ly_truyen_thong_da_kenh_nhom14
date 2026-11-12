@@ -6,10 +6,12 @@ import logging
 import threading
 import time
 import uuid
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException
 import pymysql
 from app.config import settings, validate_config
@@ -59,6 +61,14 @@ def create_app():
         description="Python + FastAPI + MySQL. Mặc định mock; xem README trước khi bật live.",
     )
     app.add_middleware(RequestSizeLimit)
+    frontend = Path(__file__).parent / "frontend"
+    app.mount("/assets", StaticFiles(directory=frontend), name="frontend")
+
+    @app.get("/", include_in_schema=False)
+    @app.get("/accept-invitation", include_in_schema=False)
+    def workspace_ui():
+        return FileResponse(frontend / "index.html")
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[settings.frontend_url],

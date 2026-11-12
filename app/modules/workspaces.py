@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from fastapi import APIRouter, Depends, Request
-from pydantic import Field
+from pydantic import Field, field_validator
 from app.common import Input, Id, Pagination, now, ok
 from app.config import settings
 from app.db import transaction, json_value
@@ -22,12 +22,22 @@ class WorkspaceInput(Input):
     logo_url: str | None = Field(None, max_length=500)
     timezone: str = "Asia/Ho_Chi_Minh"
 
+    @field_validator("name", mode="before")
+    @classmethod
+    def trim_name(cls, value):
+        return value.strip() if isinstance(value, str) else value
+
 
 class WorkspaceUpdate(Input):
     name: str | None = Field(None, min_length=1, max_length=150)
     slug: str | None = Field(None, max_length=100, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
     logo_url: str | None = Field(None, max_length=500)
     timezone: str | None = Field(None, max_length=64)
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def trim_name(cls, value):
+        return value.strip() if isinstance(value, str) else value
 
 
 class MemberUpdate(Input):
@@ -121,6 +131,14 @@ def workspace_detail(workspace_id: Id):
         return ok(db.one("SELECT * FROM workspaces WHERE workspace_id=%s", (workspace_id,)))
 
 
+@router.get("/workspaces/{workspace_id}/access", dependencies=[Depends(workspace())])
+def workspace_access(workspace_id: Id, request: Request):
+    with transaction() as db:
+        permissions = db.all(
+            "SELECT p.code FROM role_permissions rp JOIN permissions p ON p.permission_id=rp.permission_id WHERE rp.role_id=%s",
+            (request.state.member["role_id"],),
+        )
+    return ok({"role": request.state.member["role_code"], "permissions": [p["code"] for p in permissions]})
 @router.get("/workspaces/{workspace_id}/me/permissions")
 def my_workspace_permissions(workspace_id: Id, member=Depends(workspace())):
     with transaction() as db:
@@ -275,7 +293,7 @@ def invitations(workspace_id: Id, paging: Pagination = Depends()):
     with transaction() as db:
         return ok(
             db.all(
-                "SELECT invitation_id,email,role_id,status,expires_at,created_at FROM workspace_invitations WHERE workspace_id=%s ORDER BY invitation_id DESC LIMIT %s OFFSET %s",
+                "SELECT i.invitation_id,i.email,i.role_id,i.status,i.expires_at,i.created_at,r.code role FROM workspace_invitations i JOIN roles r ON r.role_id=i.role_id WHERE i.workspace_id=%s ORDER BY i.invitation_id DESC LIMIT %s OFFSET %s",
                 (workspace_id, *paging.sql),
             )
         )
@@ -295,6 +313,15 @@ def invite(workspace_id: Id, data: InvitationInput, request: Request):
             "FORBIDDEN",
             "Chỉ Admin được mời Admin",
         )
+        check(
+            not db.one(
+                "SELECT 1 FROM workspace_members m JOIN users u ON u.user_id=m.user_id WHERE m.workspace_id=%s AND u.email=%s",
+                (workspace_id, str(data.email)),
+            ),
+            409,
+            "ALREADY_MEMBER",
+            "Email này đã là thành viên workspace",
+        )
         raw, role = token(), role_by_code(db, data.role)
         db.execute(
             "UPDATE workspace_invitations SET status='revoked' WHERE workspace_id=%s AND email=%s AND status='pending'",
@@ -312,7 +339,7 @@ def invite(workspace_id: Id, data: InvitationInput, request: Request):
             },
         )
         queue_mail(
-            db, str(data.email), "Lời mời workspace", f"{settings.frontend_url}/accept-invitation?token={raw}"
+            db, str(data.email), "Lời mời workspace", f"{settings.app_url}/accept-invitation?token={raw}"
         )
         audit(
             db,
@@ -323,6 +350,50 @@ def invite(workspace_id: Id, data: InvitationInput, request: Request):
             new={"email": str(data.email), "role": data.role},
         )
     return ok({"invitation_id": invite_id})
+
+
+@router.post(
+    "/workspaces/{workspace_id}/invitations/{invitation_id}/resend",
+    dependencies=[Depends(workspace("member.manage"))],
+)
+def resend_invitation(workspace_id: Id, invitation_id: Id, request: Request):
+    with transaction() as db:
+        _, actor = lock_workspace(db, request)
+        item = db.one(
+            "SELECT i.*,r.code role FROM workspace_invitations i JOIN roles r ON r.role_id=i.role_id WHERE i.workspace_id=%s AND i.invitation_id=%s FOR UPDATE",
+            (workspace_id, invitation_id),
+        )
+        check(
+            item and item["status"] in ("pending", "expired"),
+            409,
+            "INVITATION_UNAVAILABLE",
+            "Chỉ mời lại lời mời đang chờ hoặc đã hết hạn",
+        )
+        check(
+            actor["role_code"] == "admin" or item["role"] != "admin",
+            403,
+            "FORBIDDEN",
+            "Chỉ Admin được mời Admin",
+        )
+        check(
+            not db.one(
+                "SELECT 1 FROM workspace_members m JOIN users u ON u.user_id=m.user_id WHERE m.workspace_id=%s AND u.email=%s",
+                (workspace_id, item["email"]),
+            ),
+            409,
+            "ALREADY_MEMBER",
+            "Email này đã là thành viên workspace",
+        )
+        raw = token()
+        db.execute(
+            "UPDATE workspace_invitations SET token_hash=%s,status='pending',expires_at=%s,invited_by=%s WHERE invitation_id=%s",
+            (hash_token(raw), now() + timedelta(days=7), request.state.user["user_id"], invitation_id),
+        )
+        queue_mail(
+            db, item["email"], "Lời mời workspace", f"{settings.app_url}/accept-invitation?token={raw}"
+        )
+        audit(db, request, "invitation.resend", "invitation", invitation_id)
+    return ok({"invitation_id": invitation_id, "message": "Đã gửi lại lời mời"})
 
 
 @router.post(
@@ -343,7 +414,7 @@ def revoke(workspace_id: Id, invitation_id: Id):
 def accept(data: TokenInput, user=Depends(current_user)):
     with transaction() as db:
         item = db.one(
-            "SELECT * FROM workspace_invitations WHERE token_hash=%s AND status='pending' AND expires_at>UTC_TIMESTAMP() FOR UPDATE",
+            "SELECT * FROM workspace_invitations WHERE token_hash=%s AND status='pending' AND expires_at>UTC_TIMESTAMP()",
             (hash_token(data.token),),
         )
         check(
@@ -361,6 +432,12 @@ def accept(data: TokenInput, user=Depends(current_user)):
             "NOT_FOUND",
             "Workspace không còn tồn tại",
         )
+        # Match invitation writers: lock workspace first, then recheck the token.
+        item = db.one(
+            "SELECT * FROM workspace_invitations WHERE token_hash=%s AND status='pending' AND expires_at>UTC_TIMESTAMP() FOR UPDATE",
+            (hash_token(data.token),),
+        )
+        check(item and item["email"] == user["email"], 422, "INVALID_INVITATION", "Lời mời không còn hợp lệ")
         check(
             not db.one(
                 "SELECT 1 FROM workspace_members WHERE workspace_id=%s AND user_id=%s",

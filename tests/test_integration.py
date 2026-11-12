@@ -196,6 +196,63 @@ def test_workspace_isolation_owner_and_privilege_escalation(scenario):
     s.api("PATCH", s.base + f"/members/{manager['member_id']}", {"role": "admin"}, s.manager["token"], 403)
 
 
+def test_membership_role_changes_resend_and_removal(scenario):
+    s = scenario
+    guest = s.user("membership-guest")
+    invitation = s.api(
+        "POST", s.base + "/invitations", {"email": guest["email"], "role": "viewer"}, s.owner["token"], 201
+    )
+
+    def latest_token():
+        with transaction() as db:
+            mail = db.one(
+                "SELECT body_enc FROM email_outbox WHERE recipient=%s ORDER BY email_id DESC LIMIT 1",
+                (guest["email"],),
+            )
+        return parse_qs(urlparse(decrypt(mail["body_enc"])).query)["token"][0]
+
+    original = latest_token()
+    resend = s.base + f"/invitations/{invitation['invitation_id']}/resend"
+    with transaction() as db:
+        db.execute(
+            "UPDATE workspace_invitations SET expires_at=%s WHERE invitation_id=%s",
+            (now() - timedelta(days=1), invitation["invitation_id"]),
+        )
+    s.api("POST", resend, {}, s.editor["token"], 403)
+    s.api("POST", resend, {}, s.outsider["token"], 404)
+    s.api("POST", resend, {}, s.owner["token"])
+    replacement = latest_token()
+    assert replacement != original
+    s.api("POST", "/invitations/accept", {"token": original}, guest["token"], 422)
+    s.api("POST", "/invitations/accept", {"token": replacement}, s.manager["token"], 422)
+    s.api("POST", "/invitations/accept", {"token": replacement}, guest["token"])
+    s.api("POST", resend, {}, s.owner["token"], 409)
+    s.api("POST", s.base + "/invitations", {"email": guest["email"], "role": "viewer"}, s.owner["token"], 409)
+    admin_invite = s.api(
+        "POST",
+        s.base + "/invitations",
+        {"email": f"admin-{uuid.uuid4()}@example.com", "role": "admin"},
+        s.owner["token"],
+        201,
+    )
+    s.api(
+        "POST", s.base + f"/invitations/{admin_invite['invitation_id']}/resend", {}, s.manager["token"], 403
+    )
+    listing = s.api("GET", s.base + "/members", token=guest["token"])
+    member = next(m for m in listing if m["user_id"] == guest["user_id"])
+    endpoint = s.base + f"/members/{member['member_id']}"
+    s.api("PATCH", endpoint, {"role": "manager"}, guest["token"], 403)
+    s.api("PATCH", endpoint, {"role": "manager"}, s.owner["token"])
+    assert "member.manage" in s.api("GET", s.base + "/access", token=guest["token"])["permissions"]
+    s.api("GET", s.base + "/invitations", token=guest["token"])
+    s.api("PATCH", endpoint, {"role": "viewer"}, s.owner["token"])
+    assert "member.manage" not in s.api("GET", s.base + "/access", token=guest["token"])["permissions"]
+    s.api("GET", s.base + "/invitations", token=guest["token"], status=403)
+    s.api("DELETE", endpoint, token=s.owner["token"])
+    s.api("GET", s.base + "/members", token=guest["token"], status=404)
+    s.api("GET", s.base, token=guest["token"], status=404)
+    s.api("GET", "/me", token=guest["token"])
+    s.api("POST", s.base + "/invitations", {"email": guest["email"], "role": "viewer"}, s.owner["token"], 201)
 def test_tiktok_oauth_persists_channel_and_handles_denial(scenario):
     s = scenario
     start = s.base + "/social-accounts/oauth/tiktok"

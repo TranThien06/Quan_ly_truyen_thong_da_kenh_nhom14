@@ -732,11 +732,14 @@
         }
       }
     },
+    "/api/v1/workspaces/{workspace_id}/access": {
     "/api/v1/workspaces/{workspace_id}/me/permissions": {
       "get": {
         "tags": [
           "Workspace"
         ],
+        "summary": "Workspace Access",
+        "operationId": "workspace_access_api_v1_workspaces__workspace_id__access_get",
         "summary": "My Workspace Permissions",
         "operationId": "my_workspace_permissions_api_v1_workspaces__workspace_id__me_permissions_get",
         "security": [
@@ -1117,6 +1120,60 @@
         },
         "responses": {
           "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspace_id}/invitations/{invitation_id}/resend": {
+      "post": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "Resend Invitation",
+        "operationId": "resend_invitation_api_v1_workspaces__workspace_id__invitations__invitation_id__resend_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Invitation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
