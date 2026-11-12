@@ -191,6 +191,7 @@ def login(data: LoginInput):
                     },
                 )
                 result = {
+                    "message": "Đăng nhập thành công",
                     "access_token": raw,
                     "token_type": "Bearer",
                     "expires_in": 604800,

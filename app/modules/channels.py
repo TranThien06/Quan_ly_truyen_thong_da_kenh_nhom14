@@ -1,7 +1,7 @@
 import json
 from datetime import timedelta
 from typing import Literal
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic import Field
 from app.common import Input, Id, Pagination, now, ok
 from app.db import transaction
@@ -80,10 +80,12 @@ def complete_selection(workspace_id: Id, data: SelectionInput, request: Request)
             check(item, 422, "INVALID_ACCOUNT", "Tài khoản không thuộc kết quả OAuth")
             platform = db.one("SELECT platform_id FROM platforms WHERE code=%s", (item["platform"],))
             linked_id = None
-            if item.get("linked_page_external_id"):
+            if item["platform"] == "instagram":
                 linked = db.one(
-                    "SELECT a.social_account_id FROM social_accounts a JOIN platforms p ON p.platform_id=a.platform_id WHERE a.workspace_id=%s AND a.external_account_id=%s AND p.code='facebook'",
-                    (workspace_id, item["linked_page_external_id"]),
+                    """SELECT a.social_account_id FROM social_accounts a JOIN platforms p ON p.platform_id=a.platform_id
+                    WHERE a.workspace_id=%s AND a.external_account_id=%s AND p.code='facebook'
+                    AND a.account_type='page' AND a.status='connected' FOR UPDATE""",
+                    (workspace_id, item.get("linked_page_external_id")),
                 )
                 check(linked, 422, "LINK_PAGE_FIRST", "Kết nối Facebook Page liên kết trước")
                 linked_id = linked["social_account_id"]
@@ -145,8 +147,13 @@ def start_oauth(workspace_id: Id, platform: Platform, request: Request):
 
 
 @router.get("/oauth/{platform}/callback")
-def callback(platform: Platform, state: str, code: str):
-    check(len(state) <= 100 and len(code) <= 2048, 422, "INVALID_INPUT", "Callback quá dài")
+def callback(
+    platform: Platform,
+    state: str = Query(min_length=1, max_length=100),
+    code: str | None = Query(default=None, min_length=1, max_length=2048),
+    error: str | None = Query(default=None, max_length=100),
+):
+    check(error or code, 422, "INVALID_OAUTH_CALLBACK", "Callback thiếu mã ủy quyền")
     with transaction() as db:
         row = db.one(
             "SELECT * FROM oauth_states WHERE state_hash=%s AND platform_code=%s AND consumed_at IS NULL AND expires_at>UTC_TIMESTAMP() FOR UPDATE",
@@ -157,7 +164,22 @@ def callback(platform: Platform, state: str, code: str):
         db.execute(
             "UPDATE oauth_states SET consumed_at=UTC_TIMESTAMP() WHERE state_hash=%s", (row["state_hash"],)
         )
-    accounts = social.exchange_code(platform, code, decrypt(row["verifier_enc"]))
+    if platform == "tiktok":
+        check(
+            error not in ("invalid_scope", "scope_not_authorized"),
+            403, "TIKTOK_PERMISSIONS_MISSING", "TikTok từ chối quyền truy cập được yêu cầu",
+        )
+        check(not error, 400, "OAUTH_DENIED", "Yêu cầu cấp quyền TikTok bị từ chối hoặc hủy")
+    else:
+        check(not error, 400, "OAUTH_DENIED", "Yêu cầu cấp quyền OAuth bị từ chối hoặc hủy")
+    try:
+        accounts = social.exchange_code(platform, code, decrypt(row["verifier_enc"]))
+    except social.ProviderError as exc:
+        check(
+            platform != "tiktok" or exc.code != "PROVIDER_SCOPE_MISSING",
+            403, "TIKTOK_PERMISSIONS_MISSING", "TikTok chưa cấp quyền truy cập được yêu cầu",
+        )
+        raise
     raw = token()
     with transaction() as db:
         db.insert(

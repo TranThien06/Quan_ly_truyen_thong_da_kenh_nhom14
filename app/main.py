@@ -43,6 +43,7 @@ def error_response(request, status, code, message, details=None):
 @asynccontextmanager
 async def lifespan(app):
     validate_config()
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     docs_url = (
         f"http://localhost:{settings.port}/docs"
         if settings.env != "production"
@@ -111,6 +112,8 @@ def create_app():
                 response.headers["Retry-After"] = str(window)
                 return response
         response = await call_next(request)
+        if "/oauth/" in request.url.path:
+            response.headers["Cache-Control"] = "no-store"
         response.headers.update(
             {
                 "X-Request-Id": request.state.request_id,
