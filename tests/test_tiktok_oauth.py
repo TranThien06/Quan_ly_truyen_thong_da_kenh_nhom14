@@ -39,7 +39,7 @@ def test_tiktok_web_exchange(monkeypatch, granted):
 
     monkeypatch.setattr(social, "call", provider)
     if granted == "user.info.basic":
-        channel, = social.exchange_code("tiktok", "code", "verifier")
+        (channel,) = social.exchange_code("tiktok", "code", "verifier")
         assert channel["external_account_id"] == "id" and channel["account_name"] == "Dũng"
         assert channel["avatar_url"] == "avatar" and channel["refresh_token"] == "refresh"
     else:

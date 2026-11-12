@@ -45,9 +45,13 @@ def call(url, *, method="GET", access_token=None, params=None, data=None, payloa
         expired = response.status_code == 401 or code == "190"
         retry_after = response.headers.get("retry-after", "60")
         raise ProviderError(
-            "TOKEN_EXPIRED" if expired else "RATE_LIMIT" if rate else
-            "PROVIDER_SCOPE_MISSING" if code in ("scope_not_authorized", "invalid_scope") else
-            "PROVIDER_REJECTED",
+            "TOKEN_EXPIRED"
+            if expired
+            else "RATE_LIMIT"
+            if rate
+            else "PROVIDER_SCOPE_MISSING"
+            if code in ("scope_not_authorized", "invalid_scope")
+            else "PROVIDER_REJECTED",
             retryable=rate or (not publishing and response.status_code >= 500),
             ambiguous=publishing and response.status_code >= 500,
             retry_after=int(retry_after) if retry_after.isdigit() else 60,
@@ -132,8 +136,12 @@ def authorize_url(platform, state, verifier):
     client = meta_client()
     if platform == "facebook":
         scopes = [
-            "pages_show_list", "pages_read_engagement", "pages_manage_posts",
-            "pages_messaging", "pages_manage_engagement", "pages_read_user_content",
+            "pages_show_list",
+            "pages_read_engagement",
+            "pages_manage_posts",
+            "pages_messaging",
+            "pages_manage_engagement",
+            "pages_read_user_content",
         ]
     else:
         scopes = INSTAGRAM_SCOPES
@@ -198,24 +206,35 @@ def exchange_code(platform, code, verifier):
             },
         )
         check(
-            all(isinstance(result.get(key), str) and result[key] for key in
-                ("access_token", "refresh_token", "open_id"))
+            all(
+                isinstance(result.get(key), str) and result[key]
+                for key in ("access_token", "refresh_token", "open_id")
+            )
             and isinstance(result.get("scope"), str)
-            and type(result.get("expires_in")) is int and result["expires_in"] > 0,
-            502, "TIKTOK_INVALID_TOKEN_RESPONSE", "TikTok trả về dữ liệu token không hợp lệ",
+            and type(result.get("expires_in")) is int
+            and result["expires_in"] > 0,
+            502,
+            "TIKTOK_INVALID_TOKEN_RESPONSE",
+            "TikTok trả về dữ liệu token không hợp lệ",
         )
         missing = set(tiktok_scopes()) - {scope.strip() for scope in result["scope"].split(",")}
         check(
-            not missing, 403, "TIKTOK_PERMISSIONS_MISSING",
+            not missing,
+            403,
+            "TIKTOK_PERMISSIONS_MISSING",
             "TikTok chưa cấp quyền: " + ", ".join(sorted(missing)),
         )
         profile = tiktok("user/info/?fields=open_id,display_name,avatar_url", result["access_token"])
         data = profile.get("data")
         user = data.get("user") if isinstance(data, dict) else None
         check(
-            isinstance(user, dict) and user.get("open_id") == result["open_id"]
-            and isinstance(user.get("display_name"), str) and user["display_name"],
-            502, "TIKTOK_INVALID_PROFILE", "TikTok trả về thông tin tài khoản không hợp lệ",
+            isinstance(user, dict)
+            and user.get("open_id") == result["open_id"]
+            and isinstance(user.get("display_name"), str)
+            and user["display_name"],
+            502,
+            "TIKTOK_INVALID_PROFILE",
+            "TikTok trả về thông tin tài khoản không hợp lệ",
         )
         return [
             {
@@ -247,7 +266,9 @@ def exchange_code(platform, code, verifier):
         }
         missing = [scope for scope in INSTAGRAM_SCOPES if scope not in granted]
         check(
-            not missing, 403, "INSTAGRAM_PERMISSIONS_MISSING",
+            not missing,
+            403,
+            "INSTAGRAM_PERMISSIONS_MISSING",
             "Thiếu quyền Meta: " + ", ".join(missing),
         )
         fields = "id,access_token,instagram_business_account{id,username,profile_picture_url}"
@@ -291,7 +312,9 @@ def exchange_code(platform, code, verifier):
         check(accounts, 422, "NO_FACEBOOK_PAGES", "Không tìm thấy Page được cấp quyền kết nối")
     else:
         check(
-            accounts, 422, "NO_ELIGIBLE_INSTAGRAM_ACCOUNTS",
+            accounts,
+            422,
+            "NO_ELIGIBLE_INSTAGRAM_ACCOUNTS",
             "Không tìm thấy Instagram Business hoặc Creator liên kết với Facebook Page được cấp quyền",
         )
     return accounts

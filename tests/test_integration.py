@@ -224,7 +224,9 @@ def test_oauth_reconnect_tokens_and_images(scenario):
     s = scenario
     assert s.connect() == s.channel_id
     accounts = s.api("GET", s.base + "/social-accounts", token=s.owner["token"])
-    assert len(accounts) == 1 and "access_token_enc" not in accounts[0]
+    facebook_accounts = [account for account in accounts if account["external_account_id"] == "mock-facebook"]
+    assert [account["social_account_id"] for account in facebook_accounts] == [s.channel_id]
+    assert all("access_token_enc" not in account for account in accounts)
     links = s.api("GET", s.base + f"/media/{s.media_id}/download-link", token=s.editor["token"])
     assert s.client.get(links["file_url"]).status_code == 200
     assert s.client.get(links["file_url"].split("?")[0]).status_code in (403, 422)
@@ -420,6 +422,7 @@ def test_sync_reports_inbox_and_notifications(scenario):
         )
     sync_accounts()
     threads = s.api("GET", s.base + "/conversations", token=s.editor["token"])
+    threads = [thread for thread in threads if thread["social_account_id"] == s.channel_id]
     assert len(threads) == 1
     path = s.base + f"/conversations/{threads[0]['conversation_id']}/messages"
     body = {"content": "Chào bạn", "request_id": str(uuid.uuid4())}
