@@ -33,11 +33,27 @@ Giữ cả hai terminal mở. Nhấn Ctrl+C để dừng từng tiến trình. N
 - OpenAPI: [http://localhost:3000/openapi.json](http://localhost:3000/openapi.json)
 - Base URL: `http://localhost:3000/api/v1`
 
+## Giao diện workspace
+
+Mở [http://localhost:3000](http://localhost:3000) sau khi chạy server. Giao diện Orbitspace dùng tông nâu chocolate và tím lilac, với hình UFO chủ đạo, hỗ trợ điện thoại, đăng nhập bằng tài khoản đã xác minh, tìm kiếm, tạo và cập nhật workspace. Không cần Node.js hay bước build frontend.
+
+Tên và đường dẫn là bắt buộc; đường dẫn chỉ gồm chữ thường không dấu, số và dấu gạch ngang. Múi giờ mặc định là Việt Nam. Sau khi lưu, danh sách hiển thị dữ liệu trả về từ API/MySQL. Đường dẫn logo được lưu trong thông tin workspace; thẻ danh sách dùng chữ viết tắt của tên.
+
+Giao diện lấy quyền thực tế qua `GET /api/v1/workspaces/{workspace_id}/access`. Chỉ thành viên có `workspace.manage` được bật biểu mẫu cập nhật; các thành viên khác chỉ xem. API tiếp tục kiểm tra quyền khi lưu, kể cả khi quyền thay đổi sau khi mở biểu mẫu. Phiên đăng nhập được giữ trong `sessionStorage` của tab và xóa khi đăng xuất hoặc API trả về phiên hết hạn.
+
 Trong Swagger: đăng ký → lấy token xác minh từ email demo → xác minh → đăng nhập → bấm Authorize và điền access_token → tạo workspace. `MAIL_MODE=file` ghi email vào `storage/mail` khi worker chạy. Xem [hướng dẫn payload](docs/API.md) hoặc import [Postman collection](docs/Team14.postman_collection.json).
 
 Trên Linux/macOS, thay `.\.venv\Scripts\python.exe` bằng `.venv/bin/python`.
 
 ## File chính và cách đọc code
+
+### Thành viên workspace
+
+Trong giao diện, mở một workspace rồi chọn **Thành viên**. Mọi thành viên đang hoạt động có thể xem/tìm tên, email, vai trò, trạng thái và ngày tham gia. Người có `member.manage` được mời theo email, đổi vai trò, loại thành viên và gửi lại lời mời đang chờ/hết hạn. Thao tác đổi vai trò hoặc loại thành viên có bước xác nhận. Chủ sở hữu không thể bị loại/hạ quyền; chỉ Admin được quản lý vai trò Admin.
+
+API: `GET /api/v1/workspaces/{id}/members`, `PATCH`/`DELETE /api/v1/workspaces/{id}/members/{member_id}`, `GET`/`POST /api/v1/workspaces/{id}/invitations`, `POST /api/v1/workspaces/{id}/invitations/{invitation_id}/resend`. Gửi lại thay token và gia hạn 7 ngày, liên kết cũ hết hiệu lực. Quyền được đọc lại từ database mỗi request, nên thay vai trò hoặc loại thành viên có hiệu lực ở request kế tiếp trong cùng phiên đăng nhập.
+
+Email mời được xử lý bởi worker. Với `MAIL_MODE=file`, xem email tại `storage/mail`; chế độ SMTP cần cấu hình SMTP tương ứng. Liên kết dùng `APP_URL/accept-invitation?token=...`; người nhận đăng nhập bằng tài khoản đã xác minh có email trùng lời mời, rồi chọn **Chấp nhận lời mời**. Đặt `APP_URL` theo địa chỉ mà người nhận truy cập được.
 
 ```text
 app/
