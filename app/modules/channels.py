@@ -167,7 +167,9 @@ def callback(
     if platform == "tiktok":
         check(
             error not in ("invalid_scope", "scope_not_authorized"),
-            403, "TIKTOK_PERMISSIONS_MISSING", "TikTok từ chối quyền truy cập được yêu cầu",
+            403,
+            "TIKTOK_PERMISSIONS_MISSING",
+            "TikTok từ chối quyền truy cập được yêu cầu",
         )
         check(not error, 400, "OAUTH_DENIED", "Yêu cầu cấp quyền TikTok bị từ chối hoặc hủy")
     else:
@@ -177,7 +179,9 @@ def callback(
     except social.ProviderError as exc:
         check(
             platform != "tiktok" or exc.code != "PROVIDER_SCOPE_MISSING",
-            403, "TIKTOK_PERMISSIONS_MISSING", "TikTok chưa cấp quyền truy cập được yêu cầu",
+            403,
+            "TIKTOK_PERMISSIONS_MISSING",
+            "TikTok chưa cấp quyền truy cập được yêu cầu",
         )
         raise
     raw = token()
